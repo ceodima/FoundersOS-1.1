@@ -128,7 +128,7 @@ export default function Finance() {
             return (
               <Card
                 key={idx}
-                className="p-5 bg-card/50 backdrop-blur border-border/50 hover:border-warning/30 transition-all duration-300"
+                className="p-5 bg-card/50 backdrop-blur border-border/50 hover:border-primary/30 transition-all duration-300"
               >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
@@ -139,7 +139,7 @@ export default function Finance() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-warning">
+                      <p className="text-lg font-bold text-primary">
                         {(goal.current / 1000).toFixed(0)}К
                       </p>
                       <p className="text-xs text-muted-foreground">
