@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { Target, Sparkles } from "lucide-react";
+import { useProjects } from "@/context/ProjectsContext";
 import type { TelegramTheme } from "@/hooks/useTelegramTheme";
 
 export default function Create() {
   const [goal, setGoal] = useState("");
   const navigate = useNavigate();
   const { theme } = useOutletContext<{ theme: TelegramTheme }>();
+  const { addProject } = useProjects();
 
   const handleGenerate = () => {
     if (!goal.trim()) return;
-    console.log("Generating roadmap for:", goal);
+    addProject(goal.trim());
+    setGoal("");
     navigate("/projects");
   };
 
