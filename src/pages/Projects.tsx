@@ -1,96 +1,13 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import ProjectCard, { type Project } from "@/components/ProjectCard";
+import ProjectCard from "@/components/ProjectCard";
+import { useProjects } from "@/context/ProjectsContext";
 import type { TelegramTheme } from "@/hooks/useTelegramTheme";
 
-const initialProjects: Project[] = [
-  {
-    id: 1,
-    title: 'Удвоить вовлечённость в блоге',
-    date: '15 янв',
-    progress: 25,
-    isStarted: false,
-    isCompleted: false,
-    subtasks: [
-      { title: 'Анализ текущей аудитории', completed: true },
-      { title: 'Создание контент-плана', completed: false },
-      { title: 'Настройка аналитики', completed: false },
-      { title: 'Запуск А/Б тестов', completed: false },
-    ]
-  },
-  {
-    id: 2,
-    title: 'Запустить новый продукт',
-    date: '1 фев',
-    progress: 50,
-    isStarted: false,
-    isCompleted: false,
-    subtasks: [
-      { title: 'Исследование рынка', completed: true },
-      { title: 'Прототипирование MVP', completed: false },
-    ]
-  },
-  {
-    id: 3,
-    title: 'Сэкономить 50 000 ₽',
-    date: '31 дек',
-    progress: 100,
-    isStarted: true,
-    isCompleted: true,
-    subtasks: [
-      { title: 'Аудит расходов', completed: true },
-      { title: 'Открытие накопительного счета', completed: true },
-    ]
-  }
-];
-
 export default function Projects() {
-  const [expandedId, setExpandedId] = useState<number | null>(1);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const { theme } = useOutletContext<{ theme: TelegramTheme }>();
-
-  const calculateProgress = (subtasks: { completed: boolean }[]) => {
-    if (subtasks.length === 0) return 0;
-    const completedCount = subtasks.filter(t => t.completed).length;
-    return Math.round((completedCount / subtasks.length) * 100);
-  };
-
-  const handleSubtaskToggle = (projectId: number, subtaskIndex: number) => {
-    setProjects(prev => prev.map(project => {
-      if (project.id !== projectId) return project;
-
-      const newSubtasks = [...project.subtasks];
-      newSubtasks[subtaskIndex] = {
-        ...newSubtasks[subtaskIndex],
-        completed: !newSubtasks[subtaskIndex].completed
-      };
-
-      return {
-        ...project,
-        subtasks: newSubtasks,
-        progress: calculateProgress(newSubtasks)
-      };
-    }));
-  };
-
-  const handleStartWork = (projectId: number) => {
-    setProjects(prev => prev.map(project =>
-      project.id === projectId ? { ...project, isStarted: true } : project
-    ));
-  };
-
-  const handleCompleteProject = (projectId: number) => {
-    setProjects(prev => prev.map(project =>
-      project.id === projectId
-        ? {
-            ...project,
-            isCompleted: true,
-            progress: 100,
-            subtasks: project.subtasks.map(t => ({ ...t, completed: true }))
-          }
-        : project
-    ));
-  };
+  const { projects, toggleSubtask, startWork, completeProject } = useProjects();
 
   return (
     <div className="flex flex-col h-full px-4 pt-8 pb-24" style={{ color: theme.text_color }}>
@@ -102,18 +19,25 @@ export default function Projects() {
       </div>
 
       <div className="overflow-y-auto no-scrollbar pb-10">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            expanded={expandedId === project.id}
-            onToggle={() => setExpandedId(expandedId === project.id ? null : project.id)}
-            onToggleSubtask={handleSubtaskToggle}
-            onStartWork={handleStartWork}
-            onCompleteProject={handleCompleteProject}
-            theme={theme}
-          />
-        ))}
+        {projects.length === 0 ? (
+          <div className="text-center py-12" style={{ color: theme.hint_color }}>
+            <p className="text-sm">Нет проектов</p>
+            <p className="text-xs mt-1">Создайте первый проект во вкладке "Создать"</p>
+          </div>
+        ) : (
+          projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              expanded={expandedId === project.id}
+              onToggle={() => setExpandedId(expandedId === project.id ? null : project.id)}
+              onToggleSubtask={toggleSubtask}
+              onStartWork={startWork}
+              onCompleteProject={completeProject}
+              theme={theme}
+            />
+          ))
+        )}
       </div>
     </div>
   );
