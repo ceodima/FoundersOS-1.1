@@ -1,63 +1,55 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { NavLink } from "@/components/NavLink";
-import { Lightbulb, Rocket, Wallet, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Sparkles, Rocket } from "lucide-react";
+import { useTelegramTheme } from "@/hooks/useTelegramTheme";
 
 const tabs = [
-  { path: "/", icon: Lightbulb, label: "Создать" },
-  { path: "/projects", icon: Rocket, label: "Проекты" },
-  { path: "/finance", icon: Wallet, label: "Финансы" },
-  { path: "/habits", icon: Target, label: "Привычки" },
+  { id: "create", path: "/", label: "Создать", icon: Sparkles },
+  { id: "projects", path: "/projects", label: "Проекты", icon: Rocket },
 ];
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const theme = useTelegramTheme();
+
+  const activeTab = location.pathname === "/" ? "create" : location.pathname.slice(1);
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        <Outlet />
-      </main>
+    <div 
+      className="min-h-screen font-sans selection:bg-blue-500/30 transition-colors"
+      style={{ backgroundColor: theme.bg_color }}
+    >
+      <div 
+        className="max-w-md mx-auto min-h-screen relative shadow-2xl overflow-hidden transition-colors"
+        style={{ backgroundColor: theme.bg_color }}
+      >
+        <main className="h-screen overflow-y-auto">
+          <Outlet context={{ theme }} />
+        </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border backdrop-blur-lg bg-opacity-80 z-50">
-        <div className="flex justify-around items-center h-16 max-w-2xl mx-auto px-2">
+        {/* Bottom Navigation */}
+        <nav
+          className="fixed bottom-0 left-0 right-0 border-t border-white/10 px-6 py-3 pb-6 flex justify-around items-center z-50 transition-colors"
+          style={{ backgroundColor: theme.secondary_bg_color }}
+        >
           {tabs.map((tab) => {
-            const isActive = location.pathname === tab.path;
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            
             return (
-              <NavLink
-                key={tab.path}
-                to={tab.path}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-300 min-w-[70px]",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
+              <button
+                key={tab.id}
+                onClick={() => navigate(tab.path)}
+                className="flex flex-col items-center gap-1 transition-colors duration-200"
+                style={{ color: isActive ? theme.link_color : theme.hint_color }}
               >
-                <tab.icon
-                  className={cn(
-                    "w-5 h-5 transition-all duration-300",
-                    isActive && "scale-110"
-                  )}
-                />
-                <span
-                  className={cn(
-                    "text-[10px] font-medium transition-all duration-300",
-                    isActive && "font-semibold"
-                  )}
-                >
-                  {tab.label}
-                </span>
-                {isActive && (
-                  <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-12 h-1 bg-gradient-primary rounded-t-full" />
-                )}
-              </NavLink>
+                <Icon size={20} />
+                <span className="text-[10px] font-medium">{tab.label}</span>
+              </button>
             );
           })}
-        </div>
-      </nav>
+        </nav>
+      </div>
     </div>
   );
 }

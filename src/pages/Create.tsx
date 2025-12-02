@@ -1,137 +1,64 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { Upload, Sparkles, ImagePlus, FileText, TrendingUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { Target, Sparkles } from "lucide-react";
+import type { TelegramTheme } from "@/hooks/useTelegramTheme";
 
 export default function Create() {
   const [goal, setGoal] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const navigate = useNavigate();
-
-  const handleFileUpload = () => {
-    // Simulate file upload
-    setUploadedFiles([...uploadedFiles, "analytics.png"]);
-    toast.success("Файл загружен");
-  };
+  const { theme } = useOutletContext<{ theme: TelegramTheme }>();
 
   const handleGenerate = () => {
-    if (!goal.trim()) {
-      toast.error("Введите вашу цель");
-      return;
-    }
-    toast.success("Роадмап сгенерирован!");
+    if (!goal.trim()) return;
+    console.log("Generating roadmap for:", goal);
     navigate("/projects");
   };
 
   return (
-    <div className="min-h-screen p-4 pt-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Creator's OS
-          </h1>
-          <p className="text-muted-foreground">
-            Загрузите данные и опишите цель — ИИ создаст роадмап
-          </p>
+    <div className="flex flex-col h-full px-4 pt-8 pb-24 animate-fade-in" style={{ color: theme.text_color }}>
+      <div className="text-center mb-8">
+        <h1 
+          className="text-2xl font-bold mb-2 transition-colors"
+          style={{ color: theme.link_color }}
+        >
+          Creator's OS
+        </h1>
+        <p className="text-sm transition-colors" style={{ color: theme.hint_color }}>
+          Загрузите данные и опишите цель — ИИ создаст роадмап
+        </p>
+      </div>
+
+      <div 
+        className="rounded-2xl p-4 border border-white/5 mb-6 shadow-lg transition-colors"
+        style={{ backgroundColor: theme.secondary_bg_color }}
+      >
+        <div className="flex items-center gap-2 mb-3" style={{ color: theme.link_color }}>
+          <Target size={18} />
+          <span className="font-medium text-sm">Моя Цель</span>
         </div>
+        <textarea
+          className="w-full rounded-xl p-3 placeholder-gray-600 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all resize-none h-40"
+          style={{ 
+            backgroundColor: theme.bg_color, 
+            color: theme.text_color,
+            borderColor: theme.link_color 
+          }}
+          placeholder="Например: Удвоить вовлечённость в блоге, Запустить новый продукт, Сэкономить 50 000 ₽"
+          value={goal}
+          onChange={(e) => setGoal(e.target.value)}
+        />
+      </div>
 
-        {/* Upload Section */}
-        <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/30 transition-all duration-300">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Upload className="w-4 h-4 text-accent" />
-              <span>Загрузите материалы</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={handleFileUpload}
-                className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-secondary/30 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:bg-secondary/50 group"
-              >
-                <TrendingUp className="w-6 h-6 text-muted-foreground group-hover:text-accent transition-colors" />
-                <span className="text-xs text-muted-foreground">Аналитика</span>
-              </button>
-
-              <button
-                onClick={handleFileUpload}
-                className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-secondary/30 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:bg-secondary/50 group"
-              >
-                <ImagePlus className="w-6 h-6 text-muted-foreground group-hover:text-accent transition-colors" />
-                <span className="text-xs text-muted-foreground">Скриншот</span>
-              </button>
-
-              <button
-                onClick={handleFileUpload}
-                className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-secondary/30 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:bg-secondary/50 group"
-              >
-                <FileText className="w-6 h-6 text-muted-foreground group-hover:text-accent transition-colors" />
-                <span className="text-xs text-muted-foreground">Документ</span>
-              </button>
-            </div>
-
-            {uploadedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {uploadedFiles.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="px-3 py-1.5 bg-primary/10 border border-primary/30 rounded-lg text-xs text-primary flex items-center gap-2"
-                  >
-                    <FileText className="w-3 h-3" />
-                    {file}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </Card>
-
-        {/* Goal Input */}
-        <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-accent/30 transition-all duration-300">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <span>Моя Цель</span>
-            </div>
-
-            <Textarea
-              placeholder="Например: Удвоить вовлечённость в блоге, Запустить новый продукт, Сэкономить 50 000 ₽"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              className="min-h-[120px] bg-secondary/30 border-border focus:border-accent resize-none"
-            />
-          </div>
-        </Card>
-
-        {/* Generate Button */}
-        <Button
+      <div className="mt-auto">
+        <button
           onClick={handleGenerate}
           disabled={!goal.trim()}
-          className="w-full h-14 bg-gradient-primary hover:opacity-90 text-white font-semibold text-lg rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: theme.button_color, color: theme.button_text_color }}
         >
-          <Sparkles className="w-5 h-5 mr-2" />
+          <Sparkles size={18} />
           Сгенерировать Роадмап
-        </Button>
-
-        {/* AI Preview Hint */}
-        {uploadedFiles.length > 0 && (
-          <Card className="p-4 bg-accent/5 border-accent/20">
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-accent" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-accent">ИИ Анализирует</p>
-                <p className="text-xs text-muted-foreground">
-                  Извлечены метрики: просмотры +15%, вовлечённость 3.2%, CTR 1.8%
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
+        </button>
       </div>
     </div>
   );

@@ -1,179 +1,119 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import {
-  ChevronRight,
-  Calendar,
-  Play,
-  CheckCircle2,
-  Circle,
-  Sparkles,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useOutletContext } from "react-router-dom";
+import ProjectCard, { type Project } from "@/components/ProjectCard";
+import type { TelegramTheme } from "@/hooks/useTelegramTheme";
 
-const mockProjects = [
+const initialProjects: Project[] = [
   {
     id: 1,
-    title: "Удвоить вовлечённость в блоге",
-    progress: 45,
-    deadline: "15 янв",
-    status: "active",
-    steps: [
-      { title: "Анализ текущей аудитории", status: "completed" },
-      { title: "Создание контент-плана", status: "in-progress" },
-      { title: "Настройка аналитики", status: "pending" },
-      { title: "Запуск А/Б тестов", status: "pending" },
-    ],
+    title: 'Удвоить вовлечённость в блоге',
+    date: '15 янв',
+    progress: 25,
+    isStarted: false,
+    isCompleted: false,
+    subtasks: [
+      { title: 'Анализ текущей аудитории', completed: true },
+      { title: 'Создание контент-плана', completed: false },
+      { title: 'Настройка аналитики', completed: false },
+      { title: 'Запуск А/Б тестов', completed: false },
+    ]
   },
   {
     id: 2,
-    title: "Запустить новый продукт",
-    progress: 20,
-    deadline: "1 фев",
-    status: "active",
-    steps: [
-      { title: "Исследование рынка", status: "completed" },
-      { title: "Разработка MVP", status: "in-progress" },
-      { title: "Тестирование с пользователями", status: "pending" },
-    ],
+    title: 'Запустить новый продукт',
+    date: '1 фев',
+    progress: 50,
+    isStarted: false,
+    isCompleted: false,
+    subtasks: [
+      { title: 'Исследование рынка', completed: true },
+      { title: 'Прототипирование MVP', completed: false },
+    ]
   },
   {
     id: 3,
-    title: "Сэкономить 50 000 ₽",
-    progress: 65,
-    deadline: "31 дек",
-    status: "active",
-    steps: [
-      { title: "Аудит расходов", status: "completed" },
-      { title: "Оптимизация подписок", status: "completed" },
-      { title: "Создание бюджета", status: "in-progress" },
-    ],
-  },
+    title: 'Сэкономить 50 000 ₽',
+    date: '31 дек',
+    progress: 100,
+    isStarted: true,
+    isCompleted: true,
+    subtasks: [
+      { title: 'Аудит расходов', completed: true },
+      { title: 'Открытие накопительного счета', completed: true },
+    ]
+  }
 ];
 
 export default function Projects() {
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(1);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const { theme } = useOutletContext<{ theme: TelegramTheme }>();
 
-  const handleDecompose = (stepIndex: number) => {
-    // Simulate AI decomposition
-    console.log("Decomposing step", stepIndex);
+  const calculateProgress = (subtasks: { completed: boolean }[]) => {
+    if (subtasks.length === 0) return 0;
+    const completedCount = subtasks.filter(t => t.completed).length;
+    return Math.round((completedCount / subtasks.length) * 100);
+  };
+
+  const handleSubtaskToggle = (projectId: number, subtaskIndex: number) => {
+    setProjects(prev => prev.map(project => {
+      if (project.id !== projectId) return project;
+
+      const newSubtasks = [...project.subtasks];
+      newSubtasks[subtaskIndex] = {
+        ...newSubtasks[subtaskIndex],
+        completed: !newSubtasks[subtaskIndex].completed
+      };
+
+      return {
+        ...project,
+        subtasks: newSubtasks,
+        progress: calculateProgress(newSubtasks)
+      };
+    }));
+  };
+
+  const handleStartWork = (projectId: number) => {
+    setProjects(prev => prev.map(project =>
+      project.id === projectId ? { ...project, isStarted: true } : project
+    ));
+  };
+
+  const handleCompleteProject = (projectId: number) => {
+    setProjects(prev => prev.map(project =>
+      project.id === projectId
+        ? {
+            ...project,
+            isCompleted: true,
+            progress: 100,
+            subtasks: project.subtasks.map(t => ({ ...t, completed: true }))
+          }
+        : project
+    ));
   };
 
   return (
-    <div className="min-h-screen p-4 pt-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Проекты & Роадмапы</h1>
-          <p className="text-muted-foreground">
-            Управляйте целями и декомпозируйте шаги
-          </p>
-        </div>
+    <div className="flex flex-col h-full px-4 pt-8 pb-24" style={{ color: theme.text_color }}>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-1">Проекты & Роадмапы</h1>
+        <p className="text-xs" style={{ color: theme.hint_color }}>
+          Управляйте целями и декомпозируйте шаги
+        </p>
+      </div>
 
-        {/* Projects List */}
-        <div className="space-y-3">
-          {mockProjects.map((project) => (
-            <Card
-              key={project.id}
-              className={cn(
-                "p-5 bg-card/50 backdrop-blur border-border/50 hover:border-primary/30 transition-all duration-300 cursor-pointer",
-                selectedProject === project.id && "border-primary/50 bg-card"
-              )}
-              onClick={() =>
-                setSelectedProject(
-                  selectedProject === project.id ? null : project.id
-                )
-              }
-            >
-              {/* Project Header */}
-              <div className="space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">
-                      {project.title}
-                    </h3>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {project.deadline}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-primary">
-                          {project.progress}%
-                        </span>
-                        <span>выполнено</span>
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight
-                    className={cn(
-                      "w-5 h-5 text-muted-foreground transition-transform duration-300",
-                      selectedProject === project.id && "rotate-90"
-                    )}
-                  />
-                </div>
-
-                <Progress value={project.progress} className="h-2" />
-
-                {/* Expanded Steps */}
-                {selectedProject === project.id && (
-                  <div className="space-y-3 pt-2 animate-in slide-in-from-top-2 duration-300">
-                    {project.steps.map((step, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-3 group p-3 rounded-lg hover:bg-secondary/50 transition-all"
-                      >
-                        <div className="flex-shrink-0 pt-0.5">
-                          {step.status === "completed" ? (
-                            <CheckCircle2 className="w-5 h-5 text-success" />
-                          ) : step.status === "in-progress" ? (
-                            <div className="w-5 h-5 rounded-full border-2 border-accent bg-accent/20 animate-pulse" />
-                          ) : (
-                            <Circle className="w-5 h-5 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p
-                            className={cn(
-                              "text-sm font-medium",
-                              step.status === "completed" &&
-                                "text-muted-foreground line-through"
-                            )}
-                          >
-                            {step.title}
-                          </p>
-                        </div>
-                        {step.status === "in-progress" && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs h-7 text-accent hover:text-accent hover:bg-accent/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDecompose(idx);
-                            }}
-                          >
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            Разложить
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-
-                    <Button
-                      className="w-full mt-4 bg-gradient-accent hover:opacity-90 text-background font-semibold"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Начать работу
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
+      <div className="overflow-y-auto no-scrollbar pb-10">
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            expanded={expandedId === project.id}
+            onToggle={() => setExpandedId(expandedId === project.id ? null : project.id)}
+            onToggleSubtask={handleSubtaskToggle}
+            onStartWork={handleStartWork}
+            onCompleteProject={handleCompleteProject}
+            theme={theme}
+          />
+        ))}
       </div>
     </div>
   );
