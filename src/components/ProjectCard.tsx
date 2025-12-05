@@ -6,7 +6,9 @@ import {
   Circle, 
   Play,
   Loader2,
-  CheckCheck
+  CheckCheck,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { triggerHaptic, type TelegramTheme } from "@/hooks/useTelegramTheme";
 
@@ -32,6 +34,9 @@ interface ProjectCardProps {
   onToggleSubtask: (projectId: number, subtaskIndex: number) => void;
   onStartWork: (projectId: number) => void;
   onCompleteProject: (projectId: number) => void;
+  onUpdateSubtask: (projectId: number, subtaskIndex: number, title: string) => void;
+  onAddSubtask: (projectId: number) => void;
+  onDeleteSubtask: (projectId: number, subtaskIndex: number) => void;
   theme: TelegramTheme;
 }
 
@@ -44,6 +49,9 @@ export default function ProjectCard({
   onToggleSubtask,
   onStartWork,
   onCompleteProject,
+  onUpdateSubtask,
+  onAddSubtask,
+  onDeleteSubtask,
   theme,
 }: ProjectCardProps) {
   const [isPressing, setIsPressing] = useState(false);
@@ -130,28 +138,66 @@ export default function ProjectCard({
       {/* Expanded Content */}
       {expanded && (
         <div className="mt-6 pt-4 border-t border-white/5 animate-fade-in">
-          <div className="space-y-4 mb-6">
+          <div className="space-y-3 mb-6">
             {project.subtasks.map((task, idx) => (
               <div
                 key={idx}
-                onClick={() => handleSubtaskClick(idx)}
-                className={`flex items-start gap-3 group p-2 rounded-lg transition-colors -mx-2 ${
-                  !project.isCompleted ? 'cursor-pointer hover:bg-white/5' : 'cursor-default opacity-60'
+                className={`flex items-center gap-3 group p-2 rounded-lg transition-colors -mx-2 ${
+                  !project.isCompleted ? 'hover:bg-white/5' : 'opacity-60'
                 }`}
               >
-                {task.completed ? (
-                  <CheckCircle2 size={20} className="shrink-0 mt-0.5" style={{ color: GREEN_COLOR }} />
-                ) : (
-                  <Circle size={20} className="shrink-0 mt-0.5" style={{ color: theme.hint_color }} />
-                )}
-                <span
-                  className={`text-sm transition-all ${task.completed ? 'line-through' : ''}`}
-                  style={{ color: task.completed ? theme.hint_color : theme.text_color }}
+                <button
+                  onClick={() => handleSubtaskClick(idx)}
+                  className="shrink-0"
+                  disabled={project.isCompleted}
                 >
-                  {task.title}
-                </span>
+                  {task.completed ? (
+                    <CheckCircle2 size={20} style={{ color: GREEN_COLOR }} />
+                  ) : (
+                    <Circle size={20} style={{ color: theme.hint_color }} />
+                  )}
+                </button>
+                <input
+                  type="text"
+                  value={task.title}
+                  onChange={(e) => onUpdateSubtask(project.id, idx, e.target.value)}
+                  placeholder="Введите подцель..."
+                  disabled={project.isCompleted}
+                  className={`flex-1 bg-transparent text-sm outline-none transition-all ${
+                    task.completed ? 'line-through' : ''
+                  }`}
+                  style={{ 
+                    color: task.completed ? theme.hint_color : theme.text_color,
+                  }}
+                />
+                {!project.isCompleted && (
+                  <button
+                    onClick={() => {
+                      onDeleteSubtask(project.id, idx);
+                      triggerHaptic('light');
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/10"
+                    style={{ color: theme.hint_color }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             ))}
+            
+            {!project.isCompleted && (
+              <button
+                onClick={() => {
+                  onAddSubtask(project.id);
+                  triggerHaptic('light');
+                }}
+                className="flex items-center gap-2 text-sm p-2 -mx-2 rounded-lg hover:bg-white/5 transition-colors w-full"
+                style={{ color: theme.link_color }}
+              >
+                <Plus size={18} />
+                Добавить подцель
+              </button>
+            )}
           </div>
 
           {/* Action Button with Long Press Animation */}

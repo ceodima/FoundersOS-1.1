@@ -7,6 +7,9 @@ interface ProjectsContextType {
   toggleSubtask: (projectId: number, subtaskIndex: number) => void;
   startWork: (projectId: number) => void;
   completeProject: (projectId: number) => void;
+  updateSubtask: (projectId: number, subtaskIndex: number, title: string) => void;
+  addSubtask: (projectId: number) => void;
+  deleteSubtask: (projectId: number, subtaskIndex: number) => void;
 }
 
 const initialProjects: Project[] = [
@@ -58,9 +61,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       isStarted: false,
       isCompleted: false,
       subtasks: [
-        { title: 'Определить ключевые метрики', completed: false },
-        { title: 'Составить план действий', completed: false },
-        { title: 'Выполнить первый шаг', completed: false },
+        { title: '', completed: false },
+        { title: '', completed: false },
+        { title: '', completed: false },
       ]
     };
     setProjects(prev => [newProject, ...prev]);
@@ -103,8 +106,49 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     ));
   };
 
+  const updateSubtask = (projectId: number, subtaskIndex: number, title: string) => {
+    setProjects(prev => prev.map(project => {
+      if (project.id !== projectId) return project;
+      const newSubtasks = [...project.subtasks];
+      newSubtasks[subtaskIndex] = { ...newSubtasks[subtaskIndex], title };
+      return { ...project, subtasks: newSubtasks };
+    }));
+  };
+
+  const addSubtask = (projectId: number) => {
+    setProjects(prev => prev.map(project => {
+      if (project.id !== projectId) return project;
+      return {
+        ...project,
+        subtasks: [...project.subtasks, { title: '', completed: false }],
+        progress: calculateProgress([...project.subtasks, { completed: false }])
+      };
+    }));
+  };
+
+  const deleteSubtask = (projectId: number, subtaskIndex: number) => {
+    setProjects(prev => prev.map(project => {
+      if (project.id !== projectId) return project;
+      const newSubtasks = project.subtasks.filter((_, idx) => idx !== subtaskIndex);
+      return {
+        ...project,
+        subtasks: newSubtasks,
+        progress: calculateProgress(newSubtasks)
+      };
+    }));
+  };
+
   return (
-    <ProjectsContext.Provider value={{ projects, addProject, toggleSubtask, startWork, completeProject }}>
+    <ProjectsContext.Provider value={{ 
+      projects, 
+      addProject, 
+      toggleSubtask, 
+      startWork, 
+      completeProject,
+      updateSubtask,
+      addSubtask,
+      deleteSubtask
+    }}>
       {children}
     </ProjectsContext.Provider>
   );
