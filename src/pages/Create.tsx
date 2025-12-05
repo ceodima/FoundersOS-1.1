@@ -24,7 +24,7 @@ export default function Create() {
           className="text-2xl font-bold mb-2 transition-colors"
           style={{ color: theme.link_color }}
         >
-          Creator's OS
+          Founders's OS
         </h1>
         <p className="text-sm transition-colors" style={{ color: theme.hint_color }}>
           Загрузите данные и опишите цель — ИИ создаст роадмап
