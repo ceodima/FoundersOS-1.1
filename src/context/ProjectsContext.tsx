@@ -7,6 +7,7 @@ interface ProjectsContextType {
   toggleSubtask: (projectId: number, subtaskIndex: number) => void;
   startWork: (projectId: number) => void;
   completeProject: (projectId: number) => void;
+  deleteProject: (projectId: number) => void;
   updateSubtask: (projectId: number, subtaskIndex: number, title: string) => void;
   addSubtask: (projectId: number) => void;
   deleteSubtask: (projectId: number, subtaskIndex: number) => void;
@@ -138,6 +139,10 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const deleteProject = (projectId: number) => {
+    setProjects(prev => prev.filter(project => project.id !== projectId));
+  };
+
   return (
     <ProjectsContext.Provider value={{ 
       projects, 
@@ -145,6 +150,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       toggleSubtask, 
       startWork, 
       completeProject,
+      deleteProject,
       updateSubtask,
       addSubtask,
       deleteSubtask
