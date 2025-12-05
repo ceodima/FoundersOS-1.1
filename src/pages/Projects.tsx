@@ -7,7 +7,7 @@ import type { TelegramTheme } from "@/hooks/useTelegramTheme";
 export default function Projects() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const { theme } = useOutletContext<{ theme: TelegramTheme }>();
-  const { projects, toggleSubtask, startWork, completeProject, updateSubtask, addSubtask, deleteSubtask } = useProjects();
+  const { projects, toggleSubtask, startWork, completeProject, deleteProject, updateSubtask, addSubtask, deleteSubtask } = useProjects();
 
   return (
     <div className="flex flex-col h-full px-4 pt-8 pb-24" style={{ color: theme.text_color }}>
@@ -34,6 +34,7 @@ export default function Projects() {
               onToggleSubtask={toggleSubtask}
               onStartWork={startWork}
               onCompleteProject={completeProject}
+              onDeleteProject={deleteProject}
               onUpdateSubtask={updateSubtask}
               onAddSubtask={addSubtask}
               onDeleteSubtask={deleteSubtask}
